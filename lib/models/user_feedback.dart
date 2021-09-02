@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:zameen_stage_2_dashboard/utils/api_constants.dart';
+import 'package:zameen_stage_2_dashboard/utils/helper_functions.dart';
 
 class UserFeedback {
   String? appVersion,
@@ -31,9 +33,12 @@ class UserFeedback {
     this.appVersion = json[ApiConstants.appVersion] as String?;
     this.deviceModel = json[ApiConstants.deviceModel] as String?;
     this.deviceOs = json[ApiConstants.deviceOs] as String?;
+
+
     this.feedbackComment = json[ApiConstants.feedbackComment] as String?;
-    // var feedbackTime = json[]
-    this.feedbackDate = json[ApiConstants.feedbackDate].toString();// as String?;
+    Timestamp timestamp = json[ApiConstants.feedbackDate] as Timestamp;
+    String formattedDate = getFormattedDateFromTimeStamp(timestamp);
+    this.feedbackDate = formattedDate;// as String?;
     this.feedbackRating = json[ApiConstants.feedbackRating] as String?;
     this.userEmail = json[ApiConstants.userEmail] as String?;
     this.userId = json[ApiConstants.userId] as String?;

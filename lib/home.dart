@@ -11,6 +11,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +84,11 @@ class _HomeState extends State<Home> {
 
   DataCell getDataCell(String? value) {
     return DataCell(
-      Text(value.toString()),
+      Text(value ?? "Empty", style: TextStyle(
+        color: value == null ? Colors.red: Colors.black
+      ),
+      textAlign: TextAlign.center,
+      ),
     );
   }
 

@@ -22,6 +22,7 @@ class _HomeState extends State<Home> {
   int pageNumber = 0;
   DateTime? startingDate;
   DateTime? endingDate;
+  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -36,15 +37,17 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: pageNumber == 1 ? null : () {},
             icon: Icon(
               Icons.arrow_back_ios,
             ),
             color: Colors.blue,
           ),
-          Text("Page"),
+          Text("${pageNumber}"),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              fetchNextPage();
+            },
             icon: Icon(
               Icons.arrow_forward_ios,
             ),
@@ -70,6 +73,7 @@ class _HomeState extends State<Home> {
               child: CupertinoActivityIndicator(),
             )
           : SingleChildScrollView(
+              controller: scrollController,
               child: Column(
                 children: [
                   Container(
@@ -176,7 +180,6 @@ class _HomeState extends State<Home> {
   onSort(int columnIndex, bool ascending) {
     switch (columnIndex) {
       case 0:
-
         feedBacksList.sort((feedback1, feedback2) {
           if (feedback1.feedbackDate == null ||
               feedback2.feedbackDate == null) {
@@ -280,6 +283,8 @@ class _HomeState extends State<Home> {
     lastDocument = documentSnapshot;
     feedBacksList.addAll(feedbacks);
     pageNumber = pageNumber + 1;
+    scrollController.animateTo(0,
+        duration: Duration(milliseconds: 500), curve: Curves.easeIn);
     setState(() {});
   }
 
@@ -328,7 +333,7 @@ class _HomeState extends State<Home> {
     return limitDate;
   }
 
-  void _showAlert(BuildContext context) {
+  _showAlert(BuildContext context) {
     showCupertinoDialog(
         context: context,
         builder: (context) {
@@ -345,6 +350,5 @@ class _HomeState extends State<Home> {
             ],
           );
         });
-    return;
   }
 }

@@ -11,7 +11,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,15 +26,16 @@ class _HomeState extends State<Home> {
             return SingleChildScrollView(
               child: DataTable(
                 columns: [
+                  headerTextDataColumn("Feedback\nDate"),
+                  headerTextDataColumn("User\nId"),
+                  headerTextDataColumn("User\nName"),
+                  headerTextDataColumn("User\nMobile"),
+                  headerTextDataColumn("Feedback\nRating"),
+                  headerTextDataColumn("Feedback\nComment"),
+                  headerTextDataColumn("Device\nOS"),
                   headerTextDataColumn("App\nVersion"),
                   headerTextDataColumn("Device\nModel"),
-                  headerTextDataColumn("Device\nOS"),
-                  headerTextDataColumn("Feedback\nComment"),
-                  headerTextDataColumn("Feedback\nDate"),
                   headerTextDataColumn("User\nemail"),
-                  headerTextDataColumn("User\nId"),
-                  headerTextDataColumn("User\nMobile"),
-                  headerTextDataColumn("User\nName"),
                 ],
                 rows: snapshot.data!.docs.map((DocumentSnapshot document) {
                   Map<String, dynamic> data =
@@ -70,26 +70,26 @@ class _HomeState extends State<Home> {
 
   DataRow getFeedbackRow(UserFeedback? userFeedback) {
     return DataRow(cells: [
+      getDataCell(userFeedback?.feedbackDate),
+      getDataCell(userFeedback?.userId),
+      getDataCell(userFeedback?.userName),
+      getDataCell(userFeedback?.userMobile),
+      getDataCell(userFeedback?.feedbackRating),
+      getDataCell(userFeedback?.feedbackComment),
+      getDataCell(userFeedback?.deviceOs),
       getDataCell(userFeedback?.appVersion),
       getDataCell(userFeedback?.deviceModel),
-      getDataCell(userFeedback?.deviceOs),
-      getDataCell(userFeedback?.feedbackComment),
-      getDataCell(userFeedback?.feedbackDate),
       getDataCell(userFeedback?.userEmail),
-      getDataCell(userFeedback?.userId),
-      getDataCell(userFeedback?.userMobile),
-      getDataCell(userFeedback?.userName)
     ]);
   }
 
   DataCell getDataCell(String? value) {
     return DataCell(
-      Text(value ?? "Empty", style: TextStyle(
-        color: value == null ? Colors.red: Colors.black
-      ),
-      textAlign: TextAlign.center,
+      Text(
+        value ?? "Empty",
+        style: TextStyle(color: value == null ? Colors.red : Colors.black),
+        textAlign: TextAlign.center,
       ),
     );
   }
-
 }

@@ -36,12 +36,18 @@ class UserFeedback {
     this.deviceOs = json[ApiConstants.deviceOs] as String?;
 
     this.feedbackComment = json[ApiConstants.feedbackComment] as String?;
-    Timestamp timestamp = json[ApiConstants.feedbackDate] as Timestamp;
-    this.feedbackDate = timestamp.toDate();
-    String formattedDate = getFormattedDateFromTimeStamp(timestamp);
-    this.feedbackDateString = formattedDate; // as String?;
+    var dateTime = json[ApiConstants.feedbackDate];
+    print("----beforeConversion: $dateTime");
+    if (dateTime != null) {
+      Timestamp timestamp = extractTimeStamp(dateTime)!;
+      this.feedbackDate = timestamp.toDate();
+      String formattedDate = getFormattedDateFromTimeStamp(timestamp);
+      this.feedbackDateString = formattedDate;
+    } else {
+      this.feedbackDate = null;
+      this.feedbackDateString = "";
+    }
     this.feedbackRating = json[ApiConstants.feedbackRating] as String?;
-
     this.userEmail = json[ApiConstants.userEmail] as String?;
     this.userId = json[ApiConstants.userId] as String?;
     this.userMobile = json[ApiConstants.userMobile] as String?;

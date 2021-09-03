@@ -17,9 +17,11 @@ String getFormattedDateFromTimeStamp(Timestamp timestamp) {
   formattedDate = "$weekday $date $month $year $hour:$minute $period";
   return formattedDate;
 }
-String getFormattedDateOnly (DateTime dateTime){
+
+String getFormattedDateOnly(DateTime dateTime) {
   return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
 }
+
 String getWeekday(int weekday) {
   switch (weekday) {
     case 1:
@@ -68,6 +70,17 @@ String getMonth(int month) {
   }
 }
 
-
 int compareString(bool ascending, String value1, String value2) =>
     ascending ? value1.compareTo(value2) : value2.compareTo(value1);
+
+Timestamp? extractTimeStamp(final dateTime) {
+  Timestamp? timestamp;
+  if (dateTime is Timestamp) {
+    timestamp = dateTime;
+  } else if (dateTime is String) {
+    DateTime convertedDateTime = DateTime.parse(dateTime);
+    timestamp = Timestamp.fromDate(convertedDateTime);
+  }
+  // Timestamp.
+  return timestamp;
+}

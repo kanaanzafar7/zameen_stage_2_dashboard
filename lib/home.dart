@@ -69,66 +69,66 @@ class _HomeState extends State<Home> {
           ? Center(
               child: CupertinoActivityIndicator(),
             )
-          : Column(
-              children: [
-                Container(
-                  // color: Colors.white,
-                  height: 56,
-                  width: MediaQuery.of(context).size.width,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      selectDateWidget(
-                          buttonName: "Select Starting Date",
-                          onPressed: () async {
-                            DateTime? dateTime =
-                                await selectDate(context, startingDate);
-                            if (dateTime != null) {
-                              setState(() {
-                                startingDate = dateTime;
-                              });
+          : SingleChildScrollView(
+            child: Column(
+                children: [
+                  Container(
+                    // color: Colors.white,
+                    height: 56,
+                    width: MediaQuery.of(context).size.width,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        selectDateWidget(
+                            buttonName: "Select Starting Date",
+                            onPressed: () async {
+                              DateTime? dateTime =
+                                  await selectDate(context, startingDate);
+                              if (dateTime != null) {
+                                setState(() {
+                                  startingDate = dateTime;
+                                });
+                              }
+                            },
+                            dateText: startingDate == null
+                                ? null
+                                : getFormattedDateOnly(startingDate!)),
+                        selectDateWidget(
+                            buttonName: "Select Ending Date",
+                            onPressed: () async {
+                              DateTime? dateTime =
+                                  await selectDate(context, endingDate);
+                              if (dateTime != null) {
+                                setState(() {
+                                  endingDate = dateTime;
+                                });
+                              }
+                            },
+                            dateText: endingDate == null
+                                ? null
+                                : getFormattedDateOnly(endingDate!)),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (startingDate != null && endingDate != null) {
+                              if (endingDate!.isBefore(startingDate!)) {
+                                _showAlert(context);
+                                return;
+                              }
                             }
                           },
-                          dateText: startingDate == null
-                              ? null
-                              : getFormattedDateOnly(startingDate!)),
-                      selectDateWidget(
-                          buttonName: "Select Ending Date",
-                          onPressed: () async {
-                            DateTime? dateTime =
-                                await selectDate(context, endingDate);
-                            if (dateTime != null) {
-                              setState(() {
-                                endingDate = dateTime;
-                              });
-                            }
-                          },
-                          dateText: endingDate == null
-                              ? null
-                              : getFormattedDateOnly(endingDate!)),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (startingDate != null && endingDate != null) {
-                            if (endingDate!.isBefore(startingDate!)) {
-                              _showAlert(context);
-                              return;
-                            }
-                          }
-                        },
-                        child: Text(
-                          "Apply Filters",
-                          style: TextStyle(color: Colors.blue),
+                          child: Text(
+                            "Apply Filters",
+                            style: TextStyle(color: Colors.blue),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.white,
+                            // textStyle: TextStyle(color: Colors.blue),
+                          ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.white,
-                          // textStyle: TextStyle(color: Colors.blue),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                SingleChildScrollView(
-                  child: DataTable(
+                  DataTable(
                       sortAscending: isAscending,
                       sortColumnIndex: sortColumnIndex,
                       columns: [
@@ -144,9 +144,9 @@ class _HomeState extends State<Home> {
                         headerTextDataColumn("User\nemail"),
                       ],
                       rows: getDataRows()),
-                ),
-              ],
-            ),
+                ],
+              ),
+          ),
     );
   }
 

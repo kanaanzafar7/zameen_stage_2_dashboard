@@ -10,4 +10,6 @@ class ApiConstants {
   static const userId = "userId";
   static const userMobile = "userMobile";
   static const userName = "userName";
+
+  static const pageSize = 50;
 }

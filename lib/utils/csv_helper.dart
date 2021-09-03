@@ -22,16 +22,16 @@ exportCsv(List<UserFeedback> feedBacksList) async {
 
   for (int i = 0; i < feedBacksList.length; i++) {
     List row = [];
-    row.add(feedBacksList[i].feedbackDate);
-    row.add(feedBacksList[i].userId);
-    row.add(feedBacksList[i].userName);
-    row.add(feedBacksList[i].userMobile);
-    row.add(feedBacksList[i].feedbackRating);
-    row.add(feedBacksList[i].feedbackComment);
-    row.add(feedBacksList[i].deviceOs);
-    row.add(feedBacksList[i].appVersion);
-    row.add(feedBacksList[i].deviceModel);
-    row.add(feedBacksList[i].userEmail);
+    row.add(feedBacksList[i].feedbackDate ?? "");
+    row.add(feedBacksList[i].userId ?? "");
+    row.add(feedBacksList[i].userName ?? "");
+    row.add(feedBacksList[i].userMobile ?? "");
+    row.add(feedBacksList[i].feedbackRating ?? "");
+    row.add(feedBacksList[i].feedbackComment ?? "");
+    row.add(feedBacksList[i].deviceOs ?? "");
+    row.add(feedBacksList[i].appVersion ?? "");
+    row.add(feedBacksList[i].deviceModel ?? "");
+    row.add(feedBacksList[i].userEmail ?? "");
     rows.add(row);
   }
   String csv = const ListToCsvConverter().convert(rows);
@@ -42,5 +42,4 @@ exportFile(String csv) {
   AnchorElement(href: "data:text/plain;charset=utf-8,$csv")
     ..setAttribute("download", "userFeedBack.csv")
     ..click();
-
 }

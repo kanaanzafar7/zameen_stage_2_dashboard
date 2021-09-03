@@ -65,3 +65,7 @@ String getMonth(int month) {
       return "Dec";
   }
 }
+
+
+int compareString(bool ascending, String value1, String value2) =>
+    ascending ? value1.compareTo(value2) : value2.compareTo(value1);

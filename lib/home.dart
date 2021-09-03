@@ -1,8 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
-import 'package:zameen_stage_2_dashboard/utils/api_constants.dart';
+import 'package:zameen_stage_2_dashboard/utils/api_helper.dart';
 import 'package:zameen_stage_2_dashboard/utils/csv_helper.dart';
+import 'package:zameen_stage_2_dashboard/utils/helper_functions.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -13,6 +14,16 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<UserFeedback> feedBacksList = [];
+  bool isAscending = false;
+  int? sortColumnIndex;
+  ApiHelper apiHelper = ApiHelper();
+
+  @override
+  void initState() {
+    // apiHelper.listenToFireStore();
+    getFeedBacks();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,45 +41,37 @@ class _HomeState extends State<Home> {
               ))
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection(ApiConstants.userFeedback)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            feedBacksList.clear();
-            return SingleChildScrollView(
-              child: DataTable(
-                columns: [
-                  headerTextDataColumn("Feedback\nDate"),
-                  headerTextDataColumn("User\nId"),
-                  headerTextDataColumn("User\nName"),
-                  headerTextDataColumn("User\nMobile"),
-                  headerTextDataColumn("Feedback\nRating"),
-                  headerTextDataColumn("Feedback\nComment"),
-                  headerTextDataColumn("Device\nOS"),
-                  headerTextDataColumn("App\nVersion"),
-                  headerTextDataColumn("Device\nModel"),
-                  headerTextDataColumn("User\nemail"),
-                ],
-                rows: snapshot.data!.docs.map((DocumentSnapshot document) {
-                  Map<String, dynamic> data =
-                      document.data()! as Map<String, dynamic>;
-                  UserFeedback feedback = UserFeedback.fromJson(data);
-                  feedBacksList.add(feedback);
-                  return getFeedbackRow(feedback);
-                }).toList(),
-                dividerThickness: 1.5,
-                showBottomBorder: true,
-              ),
-            );
-          }
-          return Center(
-            child: Text("Please Wait"),
-          );
-        },
-      ),
+      body: feedBacksList.isEmpty
+          ? Center(
+              child: CupertinoActivityIndicator(),
+            )
+          : DataTable(
+              sortAscending: isAscending,
+              sortColumnIndex: sortColumnIndex,
+              columns: [
+                headerTextDataColumn("Feedback\nDate"),
+                headerTextDataColumn("User\nId"),
+                headerTextDataColumn("User\nName"),
+                headerTextDataColumn("User\nMobile"),
+                headerTextDataColumn("Feedback\nRating"),
+                headerTextDataColumn("Feedback\nComment"),
+                headerTextDataColumn("Device\nOS"),
+                headerTextDataColumn("App\nVersion"),
+                headerTextDataColumn("Device\nModel"),
+                headerTextDataColumn("User\nemail"),
+              ],
+              rows: getDataRows()),
     );
+  }
+
+  List<DataRow> getDataRows() {
+    List<DataRow> dataRows = [];
+    for (int i = 0; i < feedBacksList.length; i++) {
+      UserFeedback userFeedback = feedBacksList[i];
+      DataRow dataRow = getFeedbackRow(userFeedback);
+      dataRows.add(dataRow);
+    }
+    return dataRows;
   }
 
   DataColumn headerTextDataColumn(String label) {
@@ -80,7 +83,68 @@ class _HomeState extends State<Home> {
         ),
         textAlign: TextAlign.center,
       ),
+      onSort: onSort,
     );
+  }
+
+  onSort(int columnIndex, bool ascending) {
+    switch (columnIndex) {
+      case 0:
+        feedBacksList.sort((feedback1, feedback2) => compareString(ascending,
+            feedback1.feedbackDate ?? "", feedback2.feedbackDate ?? ""));
+        break;
+      case 1:
+        feedBacksList.sort((feedback1, feedback2) => compareString(
+            ascending, feedback1.userId ?? "", feedback2.userId ?? ""));
+
+        break;
+      case 2:
+        feedBacksList.sort((feedback1, feedback2) => compareString(
+            ascending, feedback1.userName ?? "", feedback2.userName ?? ""));
+
+        break;
+      case 3:
+        feedBacksList.sort((feedback1, feedback2) => compareString(
+            ascending, feedback1.userMobile ?? "", feedback2.userMobile ?? ""));
+
+        break;
+      case 4:
+        feedBacksList.sort((feedback1, feedback2) => compareString(ascending,
+            feedback1.feedbackRating ?? "", feedback2.feedbackRating ?? ""));
+
+        break;
+
+      case 5:
+        feedBacksList.sort((feedback1, feedback2) => compareString(ascending,
+            feedback1.feedbackComment ?? "", feedback2.feedbackComment ?? ""));
+
+        break;
+
+      case 6:
+        feedBacksList.sort((feedback1, feedback2) => compareString(
+            ascending, feedback1.deviceOs ?? "", feedback2.deviceOs ?? ""));
+        break;
+      case 7:
+        feedBacksList.sort((feedback1, feedback2) => compareString(
+            ascending, feedback1.appVersion ?? "", feedback2.appVersion ?? ""));
+
+        break;
+      case 8:
+        feedBacksList.sort((feedback1, feedback2) => compareString(ascending,
+            feedback1.deviceModel ?? "", feedback2.deviceModel ?? ""));
+
+        break;
+      default:
+        feedBacksList.sort((feedback1, feedback2) => compareString(
+            ascending, feedback1.userEmail ?? "", feedback2.userEmail ?? ""));
+
+        break;
+    }
+
+    setState(() {
+      this.sortColumnIndex = columnIndex;
+      this.isAscending = ascending;
+    });
   }
 
   DataRow getFeedbackRow(UserFeedback? userFeedback) {
@@ -101,10 +165,17 @@ class _HomeState extends State<Home> {
   DataCell getDataCell(String? value) {
     return DataCell(
       Text(
-        value ?? "Empty",
+        value ?? "",
         style: TextStyle(color: value == null ? Colors.red : Colors.black),
         textAlign: TextAlign.center,
       ),
     );
+  }
+
+  getFeedBacks() async {
+    List<UserFeedback> feedbacks = await apiHelper.listenToFireStore();
+    feedBacksList.clear();
+    feedBacksList.addAll(feedbacks);
+    setState(() {});
   }
 }

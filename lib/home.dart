@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
 import 'package:zameen_stage_2_dashboard/utils/api_constants.dart';
+import 'package:zameen_stage_2_dashboard/utils/csv_helper.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -11,11 +12,24 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  List<UserFeedback> feedBacksList = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Zameen stage 2 dashboard"),
+        actions: [
+          IconButton(
+              onPressed: () async {
+                print("------feedbacks: ${feedBacksList.length}");
+                await exportCsv(feedBacksList);
+              },
+              icon: Icon(
+                Icons.download_outlined,
+                color: Colors.white,
+              ))
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -23,6 +37,7 @@ class _HomeState extends State<Home> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            feedBacksList.clear();
             return SingleChildScrollView(
               child: DataTable(
                 columns: [
@@ -41,6 +56,7 @@ class _HomeState extends State<Home> {
                   Map<String, dynamic> data =
                       document.data()! as Map<String, dynamic>;
                   UserFeedback feedback = UserFeedback.fromJson(data);
+                  feedBacksList.add(feedback);
                   return getFeedbackRow(feedback);
                 }).toList(),
                 dividerThickness: 1.5,

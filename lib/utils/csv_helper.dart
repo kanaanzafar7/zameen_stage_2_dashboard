@@ -42,20 +42,5 @@ exportFile(String csv) {
   AnchorElement(href: "data:text/plain;charset=utf-8,$csv")
     ..setAttribute("download", "userFeedBack.csv")
     ..click();
-// prepare
-  /*final bytes = utf8.encode(text);
-  final blob = html.Blob([bytes]);
-  final url = html.Url.createObjectUrlFromBlob(blob);
-  final anchor = html.document.createElement('a') as html.AnchorElement
-    ..href = url
-    ..style.display = 'none'
-    ..download = 'some_name.txt';
-  html.document.body.children.add(anchor);
-// html.document.body.add
-// download
-  anchor.click();
 
-// cleanup
-  html.document.body.children.remove(anchor);
-  html.Url.revokeObjectUrl(url); */
 }

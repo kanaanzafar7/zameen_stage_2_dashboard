@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
@@ -17,16 +18,42 @@ class _HomeState extends State<Home> {
   bool isAscending = false;
   int? sortColumnIndex;
   ApiHelper apiHelper = ApiHelper();
+  DocumentSnapshot? lastDocument;
+  int pageNumber = 0;
 
   @override
   void initState() {
-    getFeedBacks();
+    fetchFirstPage();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            onPressed: () {
+              print("------left arrow pressed");
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+            ),
+            color: Colors.blue,
+          ),
+          Text("Page"),
+          IconButton(
+            onPressed: () {
+              print("------right arrow pressed");
+            },
+            icon: Icon(
+              Icons.arrow_forward_ios,
+            ),
+            color: Colors.blue,
+          ),
+        ],
+      ),
       appBar: AppBar(
         title: Text("Zameen stage 2 dashboard"),
         actions: [
@@ -167,16 +194,28 @@ class _HomeState extends State<Home> {
     return DataCell(
       Text(
         value ?? "",
-        style: TextStyle(color: value == null ? Colors.red : Colors.black),
         textAlign: TextAlign.center,
+        textScaleFactor: 0.8,
       ),
     );
   }
 
-  getFeedBacks() async {
-    List<UserFeedback> feedbacks = await apiHelper.listenToFireStore();
-    feedBacksList.clear();
+  fetchFirstPage() async {
+    await apiHelper.fetchFirstPage(onCompletion);
+  }
+
+  void onCompletion(
+      DocumentSnapshot documentSnapshot, List<UserFeedback> feedbacks) {
+    if (lastDocument == null) {
+      feedBacksList.clear();
+    }
+    lastDocument = documentSnapshot;
     feedBacksList.addAll(feedbacks);
+    pageNumber = pageNumber + 1;
     setState(() {});
+  }
+
+  fetchNextPage() async {
+    await apiHelper.fetchNextFeedBacks(onCompletion, lastDocument!);
   }
 }

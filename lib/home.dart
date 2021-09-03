@@ -20,6 +20,8 @@ class _HomeState extends State<Home> {
   ApiHelper apiHelper = ApiHelper();
   DocumentSnapshot? lastDocument;
   int pageNumber = 0;
+  DateTime? startingDate;
+  DateTime? endingDate;
 
   @override
   void initState() {
@@ -34,9 +36,7 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
-            onPressed: () {
-              print("------left arrow pressed");
-            },
+            onPressed: () {},
             icon: Icon(
               Icons.arrow_back_ios,
             ),
@@ -44,9 +44,7 @@ class _HomeState extends State<Home> {
           ),
           Text("Page"),
           IconButton(
-            onPressed: () {
-              print("------right arrow pressed");
-            },
+            onPressed: () {},
             icon: Icon(
               Icons.arrow_forward_ios,
             ),
@@ -71,22 +69,84 @@ class _HomeState extends State<Home> {
           ? Center(
               child: CupertinoActivityIndicator(),
             )
-          : DataTable(
-              sortAscending: isAscending,
-              sortColumnIndex: sortColumnIndex,
-              columns: [
-                headerTextDataColumn("Feedback\nDate"),
-                headerTextDataColumn("User\nId"),
-                headerTextDataColumn("User\nName"),
-                headerTextDataColumn("User\nMobile"),
-                headerTextDataColumn("Feedback\nRating"),
-                headerTextDataColumn("Feedback\nComment"),
-                headerTextDataColumn("Device\nOS"),
-                headerTextDataColumn("App\nVersion"),
-                headerTextDataColumn("Device\nModel"),
-                headerTextDataColumn("User\nemail"),
+          : Column(
+              children: [
+                Container(
+                  // color: Colors.white,
+                  height: 56,
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      selectDateWidget(
+                          buttonName: "Select Starting Date",
+                          onPressed: () async {
+                            DateTime? dateTime =
+                                await selectDate(context, startingDate);
+                            if (dateTime != null) {
+                              setState(() {
+                                startingDate = dateTime;
+                              });
+                            }
+                          },
+                          dateText: startingDate == null
+                              ? null
+                              : getFormattedDateOnly(startingDate!)),
+                      selectDateWidget(
+                          buttonName: "Select Ending Date",
+                          onPressed: () async {
+                            DateTime? dateTime =
+                                await selectDate(context, endingDate);
+                            if (dateTime != null) {
+                              setState(() {
+                                endingDate = dateTime;
+                              });
+                            }
+                          },
+                          dateText: endingDate == null
+                              ? null
+                              : getFormattedDateOnly(endingDate!)),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (startingDate != null && endingDate != null) {
+                            if (endingDate!.isBefore(startingDate!)) {
+                              _showAlert(context);
+                              return;
+                            }
+                          }
+                        },
+                        child: Text(
+                          "Apply Filters",
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          primary: Colors.white,
+                          // textStyle: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SingleChildScrollView(
+                  child: DataTable(
+                      sortAscending: isAscending,
+                      sortColumnIndex: sortColumnIndex,
+                      columns: [
+                        headerTextDataColumn("Feedback\nDate"),
+                        headerTextDataColumn("User\nId"),
+                        headerTextDataColumn("User\nName"),
+                        headerTextDataColumn("User\nMobile"),
+                        headerTextDataColumn("Feedback\nRating"),
+                        headerTextDataColumn("Feedback\nComment"),
+                        headerTextDataColumn("Device\nOS"),
+                        headerTextDataColumn("App\nVersion"),
+                        headerTextDataColumn("Device\nModel"),
+                        headerTextDataColumn("User\nemail"),
+                      ],
+                      rows: getDataRows()),
+                ),
               ],
-              rows: getDataRows()),
+            ),
     );
   }
 
@@ -217,5 +277,66 @@ class _HomeState extends State<Home> {
 
   fetchNextPage() async {
     await apiHelper.fetchNextFeedBacks(onCompletion, lastDocument!);
+  }
+
+  Widget selectDateWidget(
+      {final String buttonName = "",
+      final Function()? onPressed,
+      final String? dateText = "Not Selected"}) {
+    return Row(
+      children: [
+        ElevatedButton(
+            onPressed: onPressed,
+            child: Text(
+              buttonName,
+              style: TextStyle(color: Colors.white),
+            )),
+        SizedBox(
+          width: 25,
+        ),
+        Text(
+          dateText ?? "Not Selected",
+          style: TextStyle(
+              decoration: TextDecoration.underline,
+              color: dateText == null
+                  ? Colors.grey.withOpacity(0.5)
+                  : Colors.black),
+        ),
+      ],
+    );
+  }
+
+  Future<DateTime?> selectDate(
+      BuildContext context, DateTime? limitDate) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: limitDate ?? DateTime.now(),
+      initialDatePickerMode: DatePickerMode.day,
+      firstDate: DateTime(2015),
+      lastDate: DateTime.now(), //DateTime(2101),
+    );
+    if (picked != null) limitDate = picked;
+
+    return limitDate;
+  }
+
+  void _showAlert(BuildContext context) {
+    showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            content:
+                Text("Ending date must not be greater than starting date."),
+            actions: [
+              CupertinoDialogAction(
+                child: Text("Okay"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )
+            ],
+          );
+        });
+    return;
   }
 }

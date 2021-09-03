@@ -25,8 +25,9 @@ class ApiHelper {
   }
 
   fetchNextFeedBacks(
-      void onCompletion(DocumentSnapshot documentSnapshot,
-          List<UserFeedback> feedBacks), DocumentSnapshot lastDocument) async {
+      void onCompletion(
+          DocumentSnapshot documentSnapshot, List<UserFeedback> feedBacks),
+      DocumentSnapshot lastDocument) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(ApiConstants.userFeedback)
         .startAfterDocument(lastDocument)
@@ -38,10 +39,10 @@ class ApiHelper {
     for (int i = 0; i < queryDocumentSnapshots.length; i++) {
       QueryDocumentSnapshot queryDocumentSnapshot = queryDocumentSnapshots[i];
       Map<String, Object?> map =
-      queryDocumentSnapshot.data() as Map<String, Object?>;
+          queryDocumentSnapshot.data() as Map<String, Object?>;
       UserFeedback userFeedback = UserFeedback.fromJson(map);
       feedBacks.add(userFeedback);
     }
-    onCompletion(queryDocumentSnapshots.last,feedBacks);
+    onCompletion(queryDocumentSnapshots.last, feedBacks);
   }
 }

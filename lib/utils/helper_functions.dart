@@ -17,7 +17,9 @@ String getFormattedDateFromTimeStamp(Timestamp timestamp) {
   formattedDate = "$weekday $date $month $year $hour:$minute $period";
   return formattedDate;
 }
-
+String getFormattedDateOnly (DateTime dateTime){
+  return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+}
 String getWeekday(int weekday) {
   switch (weekday) {
     case 1:

@@ -22,7 +22,7 @@ exportCsv(List<UserFeedback> feedBacksList) async {
 
   for (int i = 0; i < feedBacksList.length; i++) {
     List row = [];
-    row.add(feedBacksList[i].feedbackDate ?? "");
+    row.add(feedBacksList[i].feedbackDateString ?? "");
     row.add(feedBacksList[i].userId ?? "");
     row.add(feedBacksList[i].userName ?? "");
     row.add(feedBacksList[i].userMobile ?? "");

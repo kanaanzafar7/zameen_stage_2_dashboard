@@ -20,7 +20,6 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    // apiHelper.listenToFireStore();
     getFeedBacks();
     super.initState();
   }
@@ -90,8 +89,10 @@ class _HomeState extends State<Home> {
   onSort(int columnIndex, bool ascending) {
     switch (columnIndex) {
       case 0:
-        feedBacksList.sort((feedback1, feedback2) => compareString(ascending,
-            feedback1.feedbackDate ?? "", feedback2.feedbackDate ?? ""));
+        feedBacksList.sort((feedback1, feedback2) => ascending
+            ? feedback1.feedbackDate!.compareTo(feedback2.feedbackDate!)
+            : feedback2.feedbackDate!.compareTo(feedback1.feedbackDate!));
+
         break;
       case 1:
         feedBacksList.sort((feedback1, feedback2) => compareString(
@@ -149,7 +150,7 @@ class _HomeState extends State<Home> {
 
   DataRow getFeedbackRow(UserFeedback? userFeedback) {
     return DataRow(cells: [
-      getDataCell(userFeedback?.feedbackDate),
+      getDataCell(userFeedback?.feedbackDateString),
       getDataCell(userFeedback?.userId),
       getDataCell(userFeedback?.userName),
       getDataCell(userFeedback?.userMobile),

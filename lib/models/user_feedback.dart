@@ -7,12 +7,13 @@ class UserFeedback {
       deviceModel,
       deviceOs,
       feedbackComment,
-      feedbackDate,
+      feedbackDateString,
       feedbackRating,
       userEmail,
       userId,
       userMobile,
       userName;
+  DateTime? feedbackDate;
 
   Map<String, Object?> toJson() {
     return {
@@ -20,7 +21,7 @@ class UserFeedback {
       ApiConstants.deviceModel: this.deviceModel,
       ApiConstants.deviceOs: this.deviceOs,
       ApiConstants.feedbackComment: this.feedbackComment,
-      ApiConstants.feedbackDate: this.feedbackDate,
+      ApiConstants.feedbackDate: this.feedbackDateString,
       ApiConstants.feedbackRating: this.feedbackRating,
       ApiConstants.userEmail: this.userEmail,
       ApiConstants.userId: this.userId,
@@ -34,12 +35,13 @@ class UserFeedback {
     this.deviceModel = json[ApiConstants.deviceModel] as String?;
     this.deviceOs = json[ApiConstants.deviceOs] as String?;
 
-
     this.feedbackComment = json[ApiConstants.feedbackComment] as String?;
     Timestamp timestamp = json[ApiConstants.feedbackDate] as Timestamp;
+    this.feedbackDate = timestamp.toDate();
     String formattedDate = getFormattedDateFromTimeStamp(timestamp);
-    this.feedbackDate = formattedDate;// as String?;
+    this.feedbackDateString = formattedDate; // as String?;
     this.feedbackRating = json[ApiConstants.feedbackRating] as String?;
+
     this.userEmail = json[ApiConstants.userEmail] as String?;
     this.userId = json[ApiConstants.userId] as String?;
     this.userMobile = json[ApiConstants.userMobile] as String?;
@@ -48,6 +50,6 @@ class UserFeedback {
 
   @override
   String toString() {
-    return 'Feedback{appVersion: $appVersion, deviceModel: $deviceModel, deviceOs: $deviceOs, feedbackComment: $feedbackComment, feedbackDate: $feedbackDate, feedbackRating: $feedbackRating, userEmail: $userEmail, userId: $userId, userMobile: $userMobile, userName: $userName}';
+    return 'Feedback{appVersion: $appVersion, deviceModel: $deviceModel, deviceOs: $deviceOs, feedbackComment: $feedbackComment, feedbackDate: $feedbackDateString, feedbackRating: $feedbackRating, userEmail: $userEmail, userId: $userId, userMobile: $userMobile, userName: $userName}';
   }
 }

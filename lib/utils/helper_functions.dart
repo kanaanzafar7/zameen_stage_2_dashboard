@@ -81,6 +81,5 @@ Timestamp? extractTimeStamp(final dateTime) {
     DateTime convertedDateTime = DateTime.parse(dateTime);
     timestamp = Timestamp.fromDate(convertedDateTime);
   }
-  // Timestamp.
   return timestamp;
 }

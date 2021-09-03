@@ -37,7 +37,6 @@ class UserFeedback {
 
     this.feedbackComment = json[ApiConstants.feedbackComment] as String?;
     var dateTime = json[ApiConstants.feedbackDate];
-    print("----beforeConversion: $dateTime");
     if (dateTime != null) {
       Timestamp timestamp = extractTimeStamp(dateTime)!;
       this.feedbackDate = timestamp.toDate();

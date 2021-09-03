@@ -176,19 +176,6 @@ class _HomeState extends State<Home> {
   onSort(int columnIndex, bool ascending) {
     switch (columnIndex) {
       case 0:
-        /* feedBacksList.sort((feedback1, feedback2) {
-          if (feedback1.feedbackDate == null ||
-              feedback2.feedbackDate == null) {
-            return;
-          }
-
-          return;
-        }) */
-//        list.sort((a, b) => a == null ? 1 : 0);
-//         feedBacksList.sort((feedBack1, feedBack2) =>
-//         ascending ? feedBack1.feedbackDate == null ||
-//             feedBack2.feedbackDate == null ? 0 :
-//         );
 
         feedBacksList.sort((feedback1, feedback2) {
           if (feedback1.feedbackDate == null ||

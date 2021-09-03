@@ -21,7 +21,6 @@ class ApiHelper {
       feedBacks.add(userFeedback);
     }
     onCompletion(queryDocumentSnapshots.last, feedBacks);
-    // return feedBacks;
   }
 
   fetchNextFeedBacks(

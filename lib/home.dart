@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
+import 'package:zameen_stage_2_dashboard/ui_components/ui_components.dart';
 import 'package:zameen_stage_2_dashboard/utils/api_helper.dart';
+import 'package:zameen_stage_2_dashboard/utils/constants.dart';
 import 'package:zameen_stage_2_dashboard/utils/csv_helper.dart';
 import 'package:zameen_stage_2_dashboard/utils/helper_functions.dart';
 
@@ -24,6 +25,7 @@ class _HomeState extends State<Home> {
   DateTime? startingDate;
   DateTime? endingDate;
   ScrollController scrollController = ScrollController();
+  bool hasNextPage = true;
 
   @override
   void initState() {
@@ -34,30 +36,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            onPressed: pageNumber == 1 ? null : () {},
-            icon: Icon(
-              Icons.arrow_back_ios,
-            ),
-            color: Colors.blue,
-          ),
-          Text("${pageNumber}"),
-          IconButton(
-            onPressed: () async {
-              showLoading();
-              await fetchNextPage();
-              hideLoading();
-            },
-            icon: Icon(
-              Icons.arrow_forward_ios,
-            ),
-            color: Colors.blue,
-          ),
-        ],
-      ),
       appBar: AppBar(
         title: Text("Zameen stage 2 dashboard"),
         actions: [
@@ -75,82 +53,25 @@ class _HomeState extends State<Home> {
           ? Center(
               child: CupertinoActivityIndicator(),
             )
-          : SingleChildScrollView(
-              controller: scrollController,
-              child: Column(
+          : Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Stack(
                 children: [
-                  Container(
-                    // color: Colors.white,
-                    height: 56,
-                    width: MediaQuery.of(context).size.width,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        selectDateWidget(
-                            buttonName: "Select Starting Date",
-                            onPressed: () async {
-                              DateTime? dateTime =
-                                  await selectDate(context, startingDate);
-                              if (dateTime != null) {
-                                setState(() {
-                                  startingDate = dateTime;
-                                });
-                              }
-                            },
-                            dateText: startingDate == null
-                                ? null
-                                : getFormattedDateOnly(startingDate!)),
-                        selectDateWidget(
-                            buttonName: "Select Ending Date",
-                            onPressed: () async {
-                              DateTime? dateTime =
-                                  await selectDate(context, endingDate);
-                              if (dateTime != null) {
-                                setState(() {
-                                  endingDate = dateTime;
-                                });
-                              }
-                            },
-                            dateText: endingDate == null
-                                ? null
-                                : getFormattedDateOnly(endingDate!)),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (startingDate != null && endingDate != null) {
-                              if (endingDate!.isBefore(startingDate!)) {
-                                _showAlert(context);
-                                return;
-                              }
-                            }
-                          },
-                          child: Text(
-                            "Apply Filters",
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            primary: Colors.white,
-                            // textStyle: TextStyle(color: Colors.blue),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  DataTable(
-                      sortAscending: isAscending,
-                      sortColumnIndex: sortColumnIndex,
-                      columns: [
-                        headerTextDataColumn("Feedback\nDate"),
-                        headerTextDataColumn("User\nId"),
-                        headerTextDataColumn("User\nName"),
-                        headerTextDataColumn("User\nMobile"),
-                        headerTextDataColumn("Feedback\nRating"),
-                        headerTextDataColumn("Feedback\nComment"),
-                        headerTextDataColumn("Device\nOS"),
-                        headerTextDataColumn("App\nVersion"),
-                        headerTextDataColumn("Device\nModel"),
-                        headerTextDataColumn("User\nemail"),
-                      ],
-                      rows: getDataRows()),
+                  PositionedDirectional(
+                      top: 0, start: 0, end: 0, child: headerView()),
+                  PositionedDirectional(
+                      top: DashboardConstants.defaultConstraintSize,
+                      bottom: DashboardConstants.defaultConstraintSize,
+                      start: 0,
+                      end: 0,
+                      child: viewContent()),
+                  PositionedDirectional(
+                    child: footerView(),
+                    bottom: 0,
+                    start: 0,
+                    end: 0,
+                  )
                 ],
               ),
             ),
@@ -165,19 +86,6 @@ class _HomeState extends State<Home> {
       dataRows.add(dataRow);
     }
     return dataRows;
-  }
-
-  DataColumn headerTextDataColumn(String label) {
-    return DataColumn(
-      label: Text(
-        label,
-        style: TextStyle(
-          color: Colors.blue,
-        ),
-        textAlign: TextAlign.center,
-      ),
-      onSort: onSort,
-    );
   }
 
   onSort(int columnIndex, bool ascending) {
@@ -249,31 +157,6 @@ class _HomeState extends State<Home> {
     });
   }
 
-  DataRow getFeedbackRow(UserFeedback? userFeedback) {
-    return DataRow(cells: [
-      getDataCell(userFeedback?.feedbackDateString),
-      getDataCell(userFeedback?.userId),
-      getDataCell(userFeedback?.userName),
-      getDataCell(userFeedback?.userMobile),
-      getDataCell(userFeedback?.feedbackRating),
-      getDataCell(userFeedback?.feedbackComment),
-      getDataCell(userFeedback?.deviceOs),
-      getDataCell(userFeedback?.appVersion),
-      getDataCell(userFeedback?.deviceModel),
-      getDataCell(userFeedback?.userEmail),
-    ]);
-  }
-
-  DataCell getDataCell(String? value) {
-    return DataCell(
-      Text(
-        value ?? "",
-        textAlign: TextAlign.center,
-        textScaleFactor: 0.8,
-      ),
-    );
-  }
-
   fetchFirstPage() async {
     await apiHelper.fetchFirstPage(onCompletion);
   }
@@ -296,77 +179,128 @@ class _HomeState extends State<Home> {
     await apiHelper.fetchNextFeedBacks(onCompletion, lastDocument!);
   }
 
-  Widget selectDateWidget(
-      {final String buttonName = "",
-      final Function()? onPressed,
-      final String? dateText = "Not Selected"}) {
-    return Row(
-      children: [
-        ElevatedButton(
-            onPressed: onPressed,
+  Widget viewContent() {
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      child: SingleChildScrollView(
+        controller: scrollController,
+        child: Column(
+          children: [
+            DataTable(
+                sortAscending: isAscending,
+                sortColumnIndex: sortColumnIndex,
+                columns: [
+                  headerTextDataColumn("Feedback\nDate", onSort),
+                  headerTextDataColumn("User\nId", onSort),
+                  headerTextDataColumn("User\nName", onSort),
+                  headerTextDataColumn("User\nMobile", onSort),
+                  headerTextDataColumn("Feedback\nRating", onSort),
+                  headerTextDataColumn("Feedback\nComment", onSort),
+                  headerTextDataColumn("Device\nOS", onSort),
+                  headerTextDataColumn("App\nVersion", onSort),
+                  headerTextDataColumn("Device\nModel", onSort),
+                  headerTextDataColumn("User\nemail", onSort),
+                ],
+                rows: getDataRows()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget footerView() {
+    return Container(
+      color: Colors.white,
+      height: DashboardConstants.defaultConstraintSize,
+      width: MediaQuery.of(context).size.width,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            onPressed: pageNumber == 1 ? null : () {},
+            icon: Icon(
+              Icons.arrow_back_ios,
+            ),
+            color: Colors.blue,
+          ),
+          SizedBox(
+            width: 20,
+          ),
+          Text("${pageNumber}"),
+          SizedBox(
+            width: 20,
+          ),
+          IconButton(
+            onPressed: () async {
+              showLoading(context);
+              await fetchNextPage();
+              hideLoading();
+            },
+            icon: Icon(
+              Icons.arrow_forward_ios,
+            ),
+            color: Colors.blue,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget headerView() {
+    return Container(
+      // color: Colors.white,
+      height: DashboardConstants.defaultConstraintSize,
+      width: MediaQuery.of(context).size.width,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          selectDateWidget(
+              buttonName: "Select Starting Date",
+              onPressed: () async {
+                DateTime? dateTime = await selectDate(context, startingDate);
+                if (dateTime != null) {
+                  setState(() {
+                    startingDate = dateTime;
+                  });
+                }
+              },
+              dateText: startingDate == null
+                  ? null
+                  : getFormattedDateOnly(startingDate!)),
+          selectDateWidget(
+              buttonName: "Select Ending Date",
+              onPressed: () async {
+                DateTime? dateTime = await selectDate(context, endingDate);
+                if (dateTime != null) {
+                  setState(() {
+                    endingDate = dateTime;
+                  });
+                }
+              },
+              dateText: endingDate == null
+                  ? null
+                  : getFormattedDateOnly(endingDate!)),
+          ElevatedButton(
+            onPressed: () {
+              if (startingDate != null && endingDate != null) {
+                if (endingDate!.isBefore(startingDate!)) {
+                  showAlert(context);
+                  return;
+                }
+              }
+            },
             child: Text(
-              buttonName,
-              style: TextStyle(color: Colors.white),
-            )),
-        SizedBox(
-          width: 25,
-        ),
-        Text(
-          dateText ?? "Not Selected",
-          style: TextStyle(
-              decoration: TextDecoration.underline,
-              color: dateText == null
-                  ? Colors.grey.withOpacity(0.5)
-                  : Colors.black),
-        ),
-      ],
+              "Apply Filters",
+              style: TextStyle(color: Colors.blue),
+            ),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.white,
+              // textStyle: TextStyle(color: Colors.blue),
+            ),
+          ),
+        ],
+      ),
     );
-  }
-
-  Future<DateTime?> selectDate(
-      BuildContext context, DateTime? limitDate) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: limitDate ?? DateTime.now(),
-      initialDatePickerMode: DatePickerMode.day,
-      firstDate: DateTime(2015),
-      lastDate: DateTime.now(), //DateTime(2101),
-    );
-    if (picked != null) limitDate = picked;
-
-    return limitDate;
-  }
-
-  _showAlert(BuildContext context) {
-    showCupertinoDialog(
-        context: context,
-        builder: (context) {
-          return CupertinoAlertDialog(
-            content:
-                Text("Ending date must not be greater than starting date."),
-            actions: [
-              CupertinoDialogAction(
-                child: Text("Okay"),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              )
-            ],
-          );
-        });
-  }
-
-  showLoading() {
-    Loader.show(context,
-        isSafeAreaOverlay: false,
-        isAppbarOverlay: true,
-        isBottomBarOverlay: false,
-        progressIndicator: CupertinoActivityIndicator(),
-        themeData: Theme.of(context).copyWith(accentColor: Colors.black38),
-        overlayColor: Color(0x99E8EAF6));
-  }
-
-  hideLoading() {
-    Loader.hide();
   }
 }

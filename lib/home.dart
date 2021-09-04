@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
 import 'package:zameen_stage_2_dashboard/utils/api_helper.dart';
 import 'package:zameen_stage_2_dashboard/utils/csv_helper.dart';
@@ -45,8 +46,10 @@ class _HomeState extends State<Home> {
           ),
           Text("${pageNumber}"),
           IconButton(
-            onPressed: () {
-              fetchNextPage();
+            onPressed: () async {
+              showLoading();
+              await fetchNextPage();
+              hideLoading();
             },
             icon: Icon(
               Icons.arrow_forward_ios,
@@ -283,8 +286,9 @@ class _HomeState extends State<Home> {
     lastDocument = documentSnapshot;
     feedBacksList.addAll(feedbacks);
     pageNumber = pageNumber + 1;
-    scrollController.animateTo(0,
-        duration: Duration(milliseconds: 500), curve: Curves.easeIn);
+    if (scrollController.hasClients)
+      scrollController.animateTo(0,
+          duration: Duration(milliseconds: 500), curve: Curves.easeIn);
     setState(() {});
   }
 
@@ -350,5 +354,19 @@ class _HomeState extends State<Home> {
             ],
           );
         });
+  }
+
+  showLoading() {
+    Loader.show(context,
+        isSafeAreaOverlay: false,
+        isAppbarOverlay: true,
+        isBottomBarOverlay: false,
+        progressIndicator: CupertinoActivityIndicator(),
+        themeData: Theme.of(context).copyWith(accentColor: Colors.black38),
+        overlayColor: Color(0x99E8EAF6));
+  }
+
+  hideLoading() {
+    Loader.hide();
   }
 }

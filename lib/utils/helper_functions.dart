@@ -78,8 +78,13 @@ Timestamp? extractTimeStamp(final dateTime) {
   if (dateTime is Timestamp) {
     timestamp = dateTime;
   } else if (dateTime is String) {
-    DateTime convertedDateTime = DateTime.parse(dateTime);
-    timestamp = Timestamp.fromDate(convertedDateTime);
+    try {
+      DateTime convertedDateTime = DateTime.parse(dateTime);
+
+      timestamp = Timestamp.fromDate(convertedDateTime);
+    } catch (e) {
+      return timestamp;
+    }
   }
   return timestamp;
 }

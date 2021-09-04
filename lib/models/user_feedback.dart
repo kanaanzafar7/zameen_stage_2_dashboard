@@ -38,10 +38,15 @@ class UserFeedback {
     this.feedbackComment = json[ApiConstants.feedbackComment] as String?;
     var dateTime = json[ApiConstants.feedbackDate];
     if (dateTime != null) {
-      Timestamp timestamp = extractTimeStamp(dateTime)!;
-      this.feedbackDate = timestamp.toDate();
-      String formattedDate = getFormattedDateFromTimeStamp(timestamp);
-      this.feedbackDateString = formattedDate;
+      Timestamp? timestamp = extractTimeStamp(dateTime);
+      if (timestamp != null) {
+        this.feedbackDate = timestamp.toDate();
+        String formattedDate = getFormattedDateFromTimeStamp(timestamp);
+        this.feedbackDateString = formattedDate;
+      } else {
+        this.feedbackDate = null;
+        this.feedbackDateString = dateTime.toString();
+      }
     } else {
       this.feedbackDate = null;
       this.feedbackDateString = "";

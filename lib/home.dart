@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
+import 'package:zameen_stage_2_dashboard/ui_components/dashboard_primary_button.dart';
+import 'package:zameen_stage_2_dashboard/ui_components/date_selection_cell.dart';
 import 'package:zameen_stage_2_dashboard/ui_components/ui_components.dart';
 import 'package:zameen_stage_2_dashboard/utils/api_helper.dart';
 import 'package:zameen_stage_2_dashboard/utils/constants.dart';
@@ -26,6 +28,8 @@ class _HomeState extends State<Home> {
   DateTime? endingDate;
   ScrollController scrollController = ScrollController();
   bool hasNextPage = true;
+  DateTime? previousStartingDate;
+  DateTime? previousEndingDate;
 
   @override
   void initState() {
@@ -157,8 +161,36 @@ class _HomeState extends State<Home> {
     });
   }
 
+  restoreStartingDate() {
+    startingDate = previousStartingDate;
+  }
+
+  restoreEndingDate() {
+    endingDate = previousEndingDate;
+  }
+
+  backupStartingDate() {
+    previousStartingDate = startingDate;
+  }
+
+  backupEndingDate() {
+    previousEndingDate = endingDate;
+  }
+
+  clearFilters() {
+    setState(() {
+      startingDate = null;
+      endingDate = null;
+    });
+  }
+
   fetchFirstPage() async {
-    await apiHelper.fetchFirstPage(onCompletion);
+    try {
+      await apiHelper.fetchFirstPage(onCompletion,
+          startDate: startingDate, endDate: endingDate);
+    } catch (e) {
+      handleFailureCase(e.toString());
+    }
   }
 
   void onCompletion(
@@ -169,14 +201,30 @@ class _HomeState extends State<Home> {
     lastDocument = documentSnapshot;
     feedBacksList.addAll(feedbacks);
     pageNumber = pageNumber + 1;
-    if (scrollController.hasClients)
+    if (scrollController.hasClients) {
       scrollController.animateTo(0,
           duration: Duration(milliseconds: 500), curve: Curves.easeIn);
+    }
     setState(() {});
   }
 
   fetchNextPage() async {
-    await apiHelper.fetchNextFeedBacks(onCompletion, lastDocument!);
+    try {
+      await apiHelper.fetchNextFeedBacks(onCompletion, lastDocument!,
+          startDate: startingDate, endDate: endingDate);
+    } catch (e) {
+      handleFailureCase(e.toString());
+    }
+  }
+
+  handleFailureCase(String message) {
+    restoreStartingDate();
+    restoreEndingDate();
+
+    hideLoading();
+    // restoreDates();
+    showAlert(context, message: message);
+    setState(() {});
   }
 
   Widget viewContent() {
@@ -249,17 +297,17 @@ class _HomeState extends State<Home> {
 
   Widget headerView() {
     return Container(
-      // color: Colors.white,
       height: DashboardConstants.defaultConstraintSize,
       width: MediaQuery.of(context).size.width,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          selectDateWidget(
+          DateSelectionCell(
               buttonName: "Select Starting Date",
               onPressed: () async {
                 DateTime? dateTime = await selectDate(context, startingDate);
                 if (dateTime != null) {
+                  backupStartingDate();
                   setState(() {
                     startingDate = dateTime;
                   });
@@ -268,11 +316,12 @@ class _HomeState extends State<Home> {
               dateText: startingDate == null
                   ? null
                   : getFormattedDateOnly(startingDate!)),
-          selectDateWidget(
+          DateSelectionCell(
               buttonName: "Select Ending Date",
               onPressed: () async {
                 DateTime? dateTime = await selectDate(context, endingDate);
                 if (dateTime != null) {
+                  backupEndingDate();
                   setState(() {
                     endingDate = dateTime;
                   });
@@ -281,26 +330,28 @@ class _HomeState extends State<Home> {
               dateText: endingDate == null
                   ? null
                   : getFormattedDateOnly(endingDate!)),
-          ElevatedButton(
-            onPressed: () {
-              if (startingDate != null && endingDate != null) {
-                if (endingDate!.isBefore(startingDate!)) {
-                  showAlert(context);
-                  return;
-                }
-              }
-            },
-            child: Text(
-              "Apply Filters",
-              style: TextStyle(color: Colors.blue),
-            ),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.white,
-              // textStyle: TextStyle(color: Colors.blue),
-            ),
-          ),
+          DashboardPrimaryButton(
+            buttonName: "Apply Filters",
+            onPressed: applyFilters,
+          )
         ],
       ),
     );
+  }
+
+  applyFilters() async {
+    if (startingDate == null && endingDate == null) {
+      return;
+    }
+    if (startingDate != null && endingDate != null) {
+      if (endingDate!.isBefore(startingDate!)) {
+        showAlert(context);
+        return;
+      }
+    }
+    showLoading(context);
+    pageNumber = 0;
+    await fetchFirstPage();
+    hideLoading();
   }
 }

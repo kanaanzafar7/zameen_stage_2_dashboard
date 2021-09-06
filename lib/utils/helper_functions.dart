@@ -15,13 +15,24 @@ String getFormattedDateFromTimeStamp(Timestamp timestamp) {
   TimeOfDay timeOfDay = TimeOfDay(hour: hour, minute: minute);
   String period = timeOfDay.period == DayPeriod.am ? "AM" : "PM";
   formattedDate =
-      "$weekday ${correctFormatForNumbers(date)} $month $year ${correctFormatForNumbers(hour)}:${correctFormatForNumbers(minute)} $period";
+      "$weekday ${correctFormatForNumbers(date)} $month $year ${correctHour(hour)}:${correctFormatForNumbers(minute)} $period";
 
   return formattedDate;
 }
 
 String getFormattedDateOnly(DateTime dateTime) {
   return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+}
+
+String correctHour(int hour) {
+  if (hour == 0) {
+    hour = 12;
+  } else if (hour > 12) {
+    hour = hour % 12;
+  }
+  String correctHour = correctFormatForNumbers(hour);
+
+  return correctHour;
 }
 
 String correctFormatForNumbers(int number) {

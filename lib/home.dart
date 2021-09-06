@@ -43,7 +43,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Zameen stage 2 dashboard"),
+        title: Text("Zameen production dashboard"),
         actions: [
           IconButton(
               onPressed: () async {

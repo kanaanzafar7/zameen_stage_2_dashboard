@@ -4,13 +4,13 @@ import 'package:zameen_stage_2_dashboard/ui_components/ui_components.dart';
 
 class FeedbackData extends DataTableSource {
   final List<UserFeedback> userFeedbacks;
-
-  FeedbackData({this.userFeedbacks = const []});
+  final BuildContext? context;
+  FeedbackData({this.userFeedbacks = const [], this.context});
 
   @override
   DataRow? getRow(int index) {
     // TODO: implement getRow
-    return getFeedbackRow(userFeedbacks[index]);
+    return getFeedbackRow(index + 1, userFeedbacks[index], context!);
   }
 
   @override

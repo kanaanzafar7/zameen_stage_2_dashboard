@@ -4,9 +4,6 @@ import 'package:zameen_stage_2_dashboard/utils/helper_functions.dart';
 class DateSelectionCell extends StatelessWidget {
   final Function()? onTap;
 
-  // final String? dateText;
-// final DateTime? startDate;
-// final DateTime? endDate;
   final DateTimeRange? dateTimeRange;
 
   DateSelectionCell({this.onTap, this.dateTimeRange});

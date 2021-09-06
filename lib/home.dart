@@ -37,7 +37,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     DateTime todayDate = DateTime.now();
-    feedbackData = FeedbackData(userFeedbacks: feedBacksList);
+    feedbackData = FeedbackData(userFeedbacks: feedBacksList, context: context);
     dateTimeRange = DateTimeRange(
         start: DateTime(todayDate.year, todayDate.month), end: todayDate);
     fetchFirstPage();
@@ -46,6 +46,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: PreferredSize(
           child: Container(
@@ -57,43 +58,18 @@ class _HomeState extends State<Home> {
                   start: 15,
                   child: Text(
                     "Zameen - Production",
-                    // style: TextStyle(
-                    //     fontWeight: FontWeight.bold, color: Colors.black38),
+
                     style: GoogleFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: Color.fromRGBO(0, 0, 0, 0.87)),
                   ),
                 ),
-                PositionedDirectional(
-                    bottom: 15,
-                    start: 15,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.feedback_outlined,
-                          color:
-                              Color(DashboardConstants.dashboardPrimaryColor),
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Text(
-                          "Feedbacks | ",
-                          // style: GoogleFonts.,
-                          style: TextStyle(fontSize: 28),
-                        ),
-                        Text(
-                          "Dashboard",
-                          style: TextStyle(fontSize: 28),
-                        ),
-                      ],
-                    )),
               ],
             ),
           ),
-          preferredSize: Size(
-              double.infinity, 2 * DashboardConstants.defaultConstraintSize)),
+          preferredSize:
+              Size(double.infinity, DashboardConstants.defaultConstraintSize)),
       body: feedBacksList.isEmpty
           ? Center(
               child: CupertinoActivityIndicator(),
@@ -185,7 +161,7 @@ class _HomeState extends State<Home> {
 
         break;
     }
-    feedbackData = FeedbackData(userFeedbacks: feedBacksList);
+    feedbackData = FeedbackData(userFeedbacks: feedBacksList, context: context);
     setState(() {
       this.sortColumnIndex = columnIndex;
       this.isAscending = ascending;
@@ -224,7 +200,7 @@ class _HomeState extends State<Home> {
     StaticInfo.totalPagesFetched = StaticInfo.totalPagesFetched + 1;
     pageNumber = StaticInfo.totalPagesFetched;
     StaticInfo.feedBackCollections[pageNumber] = feedBacks;
-    feedbackData = FeedbackData(userFeedbacks: feedBacksList);
+    feedbackData = FeedbackData(userFeedbacks: feedBacksList, context: context);
     scrollToTop();
     setState(() {});
   }
@@ -265,44 +241,99 @@ class _HomeState extends State<Home> {
   }
 
   Widget viewContent() {
-   
-    return SingleChildScrollView(
-      controller: scrollController,
-      child: Column(
-        children: [
-          PaginatedDataTable(
-            columns: [
-              headerTextDataColumn("Feedback\nDate", onSort),
-              headerTextDataColumn("User\nId", onSort),
-              headerTextDataColumn("User\nName", onSort),
-              headerTextDataColumn("User\nMobile", onSort),
-              headerTextDataColumn("Feedback\nRating", onSort),
-              headerTextDataColumn("Feedback\nComment", onSort),
-              headerTextDataColumn("Device\nOS", onSort),
-              headerTextDataColumn("App\nVersion", onSort),
-              headerTextDataColumn("Device\nModel", onSort),
-              headerTextDataColumn("User\nemail", onSort),
-            ],
-            source: feedbackData!,
-            sortAscending: isAscending,
-            sortColumnIndex: sortColumnIndex,
-            rowsPerPage: pageSize,
-            // showCheckboxColumn: true,
-            // columnSpacing: 45,
-            //ApiConstants.pageSize,
-            onRowsPerPageChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  pageSize = value;
-                });
-              }
-            },
+    // return DataGrid
+    return LayoutBuilder(builder: (context, constraints) {
+      return Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: SingleChildScrollView(
+          controller: scrollController,
+          child: Column(
+            children: [
+              PaginatedDataTable(
+                columns: [
+                  headerTextDataColumn("No.", (boolVal, intVal) {}, context),
+                  headerTextDataColumn("Feedback\nDate", onSort, context),
+                  headerTextDataColumn("User\nId", onSort, context),
+                  headerTextDataColumn("User\nName", onSort, context),
+                  headerTextDataColumn("User\nMobile", onSort, context),
+                  headerTextDataColumn("Feedback\nRating", onSort, context),
+                  headerTextDataColumn("Feedback\nComment", onSort, context),
+                  headerTextDataColumn("Device\nOS", onSort, context),
+                  headerTextDataColumn("App\nVersion", onSort, context),
+                  headerTextDataColumn("Device\nModel", onSort, context),
+                  headerTextDataColumn("User\nemail", onSort, context),
+                ],
 
+                source: feedbackData!,
+                sortAscending: isAscending,
+                sortColumnIndex: sortColumnIndex,
+                rowsPerPage: pageSize,
+                horizontalMargin: 0,
+
+                // showCheckboxColumn: true,
+                columnSpacing: 0,
+                //ApiConstants.pageSize,
+                onRowsPerPageChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      pageSize = value;
+                    });
+                  }
+                },
+              ),
+              Container(
+                height: DashboardConstants.defaultConstraintSize * 3,
+              ),
+            ],
           ),
-          Container(
-            height: DashboardConstants.defaultConstraintSize * 3,
-          ),
-        ],
+        ),
+      );
+    });
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      child: SingleChildScrollView(
+        controller: scrollController,
+        child: Column(
+          children: [
+            PaginatedDataTable(
+              columns: [
+                headerTextDataColumn("No.", (boolVal, intVal) {}, context),
+                headerTextDataColumn("Feedback\nDate", onSort, context),
+                headerTextDataColumn("User\nId", onSort, context),
+                headerTextDataColumn("User\nName", onSort, context),
+                headerTextDataColumn("User\nMobile", onSort, context),
+                headerTextDataColumn("Feedback\nRating", onSort, context),
+                headerTextDataColumn("Feedback\nComment", onSort, context),
+                headerTextDataColumn("Device\nOS", onSort, context),
+                headerTextDataColumn("App\nVersion", onSort, context),
+                headerTextDataColumn("Device\nModel", onSort, context),
+                headerTextDataColumn("User\nemail", onSort, context),
+              ],
+
+              source: feedbackData!,
+              sortAscending: isAscending,
+              sortColumnIndex: sortColumnIndex,
+              rowsPerPage: pageSize,
+              horizontalMargin: 0,
+
+              // showCheckboxColumn: true,
+              // columnSpacing: 12.5,
+              //ApiConstants.pageSize,
+              onRowsPerPageChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    pageSize = value;
+                  });
+                }
+              },
+            ),
+            Container(
+              height: DashboardConstants.defaultConstraintSize * 3,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -354,33 +385,63 @@ class _HomeState extends State<Home> {
       height: DashboardConstants.defaultConstraintSize,
       width: MediaQuery.of(context).size.width,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          DateSelectionCell(
-            onTap: () async {
-              DateTimeRange? dateTimeRangeTemp =
-                  await selectDateRange(context, dateTimeRange);
-              if (dateTimeRangeTemp != null) {
-                dateTimeRange = dateTimeRangeTemp;
-                setState(() {});
-                applyFilters();
-              }
-            },
-            dateTimeRange: dateTimeRange,
+          Row(
+            children: [
+              SizedBox(
+                width: 15,
+              ),
+              Image.asset(
+                "assets/images/feedback_icon.png",
+                height: 25,
+                width: 25,
+                color: Color(DashboardConstants.dashboardPrimaryColor),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Text(
+                "Feedbacks | ",
+                // style: GoogleFonts.,
+                style: TextStyle(fontSize: 20),
+              ),
+              Text(
+                "Dashboard",
+                style: TextStyle(fontSize: 20),
+              ),
+            ],
           ),
-          IconButton(
-              onPressed: () async {
-                await exportCsv(feedBacksList);
-              },
-              icon: Icon(
-                Icons.download_outlined,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              DateSelectionCell(
+                onTap: () async {
+                  DateTimeRange? dateTimeRangeTemp =
+                      await selectDateRange(context, dateTimeRange);
+                  if (dateTimeRangeTemp != null) {
+                    dateTimeRange = dateTimeRangeTemp;
+                    setState(() {});
+                    applyFilters();
+                  }
+                },
+                dateTimeRange: dateTimeRange,
+              ),
+              IconButton(
+                  onPressed: () async {
+                    await exportCsv(feedBacksList);
+                  },
+                  icon: Icon(
+                    Icons.download_outlined,
 
-                // color: Colors.blue,
-              )),
-          SizedBox(
-            width: 30,
-          )
+                    // color: Colors.blue,
+                  )),
+              SizedBox(
+                width: 30,
+              )
+            ],
+          ),
         ],
       ),
     );

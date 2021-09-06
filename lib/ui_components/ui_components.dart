@@ -7,44 +7,51 @@ import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
 import 'package:zameen_stage_2_dashboard/utils/dashboard_constants.dart';
 
 //Table headers
-DataColumn headerTextDataColumn(
-    String label, void onSort(int columnIndex, bool ascending)) {
+DataColumn headerTextDataColumn(String label,
+    void onSort(int columnIndex, bool ascending), BuildContext context) {
   return DataColumn(
-    label: Text(
-      label,
-      style: TextStyle(
-        // color: Colors.blue,
-      color: Color(DashboardConstants.dashboardPrimaryColor)
+    label: Container(
+      width: MediaQuery.of(context).size.width / 11,
+      child: Text(
+        label,
+        style: TextStyle(
+            // color: Colors.blue,
+            color: Color(DashboardConstants.dashboardPrimaryColor)),
+        textAlign: TextAlign.center,
       ),
-      textAlign: TextAlign.center,
     ),
     onSort: onSort,
   );
 }
 
 //Table record
-DataRow getFeedbackRow(UserFeedback? userFeedback) {
+DataRow getFeedbackRow(
+    int index, UserFeedback? userFeedback, BuildContext context) {
   return DataRow(cells: [
-    getDataCell(userFeedback?.feedbackDateString),
-    getDataCell(userFeedback?.userId),
-    getDataCell(userFeedback?.userName),
-    getDataCell(userFeedback?.userMobile),
-    getDataCell(userFeedback?.feedbackRating),
-    getDataCell(userFeedback?.feedbackComment),
-    getDataCell(userFeedback?.deviceOs),
-    getDataCell(userFeedback?.appVersion),
-    getDataCell(userFeedback?.deviceModel),
-    getDataCell(userFeedback?.userEmail),
+    getDataCell(index.toString(), context),
+    getDataCell(userFeedback?.feedbackDateString, context),
+    getDataCell(userFeedback?.userId, context),
+    getDataCell(userFeedback?.userName, context),
+    getDataCell(userFeedback?.userMobile, context),
+    getDataCell(userFeedback?.feedbackRating, context),
+    getDataCell(userFeedback?.feedbackComment, context),
+    getDataCell(userFeedback?.deviceOs, context),
+    getDataCell(userFeedback?.appVersion, context),
+    getDataCell(userFeedback?.deviceModel, context),
+    getDataCell(userFeedback?.userEmail, context),
   ]);
 }
 
 //Single cell in record
-DataCell getDataCell(String? value) {
+DataCell getDataCell(String? value, BuildContext context) {
   return DataCell(
-    Text(
-      value ?? "",
-      textAlign: TextAlign.center,
-      textScaleFactor: 0.8,
+    Container(
+      width: MediaQuery.of(context).size.width / 11,
+      child: Text(
+        value ?? "",
+        textAlign: TextAlign.center,
+        textScaleFactor: 0.8,
+      ),
     ),
   );
 }
@@ -62,7 +69,8 @@ Future<DateTimeRange?> selectDateRange(
         return Align(
           alignment: Alignment.topRight,
           child: Padding(
-            padding: EdgeInsets.only(right: 30, top: (2 * DashboardConstants.defaultConstraintSize) + 14),
+            padding: EdgeInsets.only(
+                right: 30, top: DashboardConstants.defaultConstraintSize + 14),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxWidth: 500.0,

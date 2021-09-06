@@ -14,12 +14,22 @@ String getFormattedDateFromTimeStamp(Timestamp timestamp) {
   int minute = dateTime.minute;
   TimeOfDay timeOfDay = TimeOfDay(hour: hour, minute: minute);
   String period = timeOfDay.period == DayPeriod.am ? "AM" : "PM";
-  formattedDate = "$weekday $date $month $year $hour:$minute $period";
+  formattedDate =
+      "$weekday ${correctFormatForNumbers(date)} $month $year ${correctFormatForNumbers(hour)}:${correctFormatForNumbers(minute)} $period";
+
   return formattedDate;
 }
 
 String getFormattedDateOnly(DateTime dateTime) {
   return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+}
+
+String correctFormatForNumbers(int number) {
+  String correctNumber = "$number";
+  if (number < 10) {
+    correctNumber = "0$number";
+  }
+  return correctNumber;
 }
 
 String getWeekday(int weekday) {

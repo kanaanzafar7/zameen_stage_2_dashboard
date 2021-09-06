@@ -21,7 +21,7 @@ String getFormattedDateFromTimeStamp(Timestamp timestamp) {
 }
 
 String getFormattedDateOnly(DateTime dateTime) {
-  return "${correctFormatForNumbers(dateTime.day)}/${correctFormatForNumbers(dateTime.month)}/${dateTime.year}";
+  return "${getMonth(dateTime.month)} ${correctFormatForNumbers(dateTime.day)}, ${dateTime.year}";
 }
 
 String correctHour(int hour) {

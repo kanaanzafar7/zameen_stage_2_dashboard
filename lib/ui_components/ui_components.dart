@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
+import 'package:zameen_stage_2_dashboard/utils/dashboard_constants.dart';
 
 //Table headers
 DataColumn headerTextDataColumn(
@@ -12,7 +13,8 @@ DataColumn headerTextDataColumn(
     label: Text(
       label,
       style: TextStyle(
-        color: Colors.blue,
+        // color: Colors.blue,
+      color: Color(DashboardConstants.dashboardPrimaryColor)
       ),
       textAlign: TextAlign.center,
     ),
@@ -47,24 +49,32 @@ DataCell getDataCell(String? value) {
   );
 }
 
-// Widget dateSelectionCell(
-//     {final String buttonName = "",
-//     final Function()? onPressed,
-//     final String? dateText = "Not Selected"}) {
-//
-// }
+Future<DateTimeRange?> selectDateRange(
+    BuildContext context, DateTimeRange? initialDateTimeRange) async {
+  DateTimeRange? dateTimeRange = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      useRootNavigator: false,
+      initialDateRange: initialDateTimeRange,
+      saveText: "Apply",
+      builder: (context, child) {
+        return Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: EdgeInsets.only(right: 30, top: (2 * DashboardConstants.defaultConstraintSize) + 14),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 500.0,
+                maxHeight: 500.0,
+              ),
+              child: child,
+            ),
+          ),
+        );
+      });
 
-Future<DateTime?> selectDate(BuildContext context, DateTime? limitDate) async {
-  final DateTime? picked = await showDatePicker(
-    context: context,
-    initialDate: limitDate ?? DateTime.now(),
-    initialDatePickerMode: DatePickerMode.day,
-    firstDate: DateTime(2000),
-    lastDate: DateTime.now(), //DateTime(2101),
-  );
-  if (picked != null) limitDate = picked;
-
-  return limitDate;
+  return dateTimeRange;
 }
 
 showAlert(BuildContext context, {String? message}) {
@@ -101,4 +111,3 @@ showLoading(BuildContext context) {
 hideLoading() {
   Loader.hide();
 }
-

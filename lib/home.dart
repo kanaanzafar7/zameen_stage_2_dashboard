@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:zameen_stage_2_dashboard/models/feedback_data.dart';
 import 'package:zameen_stage_2_dashboard/models/user_feedback.dart';
-import 'package:zameen_stage_2_dashboard/ui_components/dashboard_primary_button.dart';
 import 'package:zameen_stage_2_dashboard/ui_components/date_selection_cell.dart';
 import 'package:zameen_stage_2_dashboard/ui_components/ui_components.dart';
 import 'package:zameen_stage_2_dashboard/utils/api_helper.dart';
-import 'package:zameen_stage_2_dashboard/utils/constants.dart';
+import 'package:zameen_stage_2_dashboard/utils/dashboard_constants.dart';
 import 'package:zameen_stage_2_dashboard/utils/csv_helper.dart';
 import 'package:zameen_stage_2_dashboard/utils/helper_functions.dart';
 import 'package:zameen_stage_2_dashboard/utils/static_info.dart';
@@ -26,15 +27,19 @@ class _HomeState extends State<Home> {
   DocumentSnapshot? lastDocument;
 
   int pageNumber = 0;
-  DateTime? startingDate;
-  DateTime? endingDate;
+
   ScrollController scrollController = ScrollController();
   bool hasNextPage = true;
-  DateTime? previousStartingDate;
-  DateTime? previousEndingDate;
+  DateTimeRange? dateTimeRange;
+  DataTableSource? feedbackData;
+  int pageSize = 50;
 
   @override
   void initState() {
+    DateTime todayDate = DateTime.now();
+    feedbackData = FeedbackData(userFeedbacks: feedBacksList);
+    dateTimeRange = DateTimeRange(
+        start: DateTime(todayDate.year, todayDate.month), end: todayDate);
     fetchFirstPage();
     super.initState();
   }
@@ -42,19 +47,53 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Zameen stage 2 dashboard"),
-        actions: [
-          IconButton(
-              onPressed: () async {
-                await exportCsv(feedBacksList);
-              },
-              icon: Icon(
-                Icons.download_outlined,
-                color: Colors.white,
-              ))
-        ],
-      ),
+      appBar: PreferredSize(
+          child: Container(
+            color: Colors.white,
+            child: Stack(
+              children: [
+                PositionedDirectional(
+                  top: 15,
+                  start: 15,
+                  child: Text(
+                    "Zameen - Production",
+                    // style: TextStyle(
+                    //     fontWeight: FontWeight.bold, color: Colors.black38),
+                    style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromRGBO(0, 0, 0, 0.87)),
+                  ),
+                ),
+                PositionedDirectional(
+                    bottom: 15,
+                    start: 15,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.feedback_outlined,
+                          color:
+                              Color(DashboardConstants.dashboardPrimaryColor),
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          "Feedbacks | ",
+                          // style: GoogleFonts.,
+                          style: TextStyle(fontSize: 28),
+                        ),
+                        Text(
+                          "Dashboard",
+                          style: TextStyle(fontSize: 28),
+                        ),
+                      ],
+                    )),
+              ],
+            ),
+          ),
+          preferredSize: Size(
+              double.infinity, 2 * DashboardConstants.defaultConstraintSize)),
       body: feedBacksList.isEmpty
           ? Center(
               child: CupertinoActivityIndicator(),
@@ -68,30 +107,20 @@ class _HomeState extends State<Home> {
                       top: 0, start: 0, end: 0, child: headerView()),
                   PositionedDirectional(
                       top: DashboardConstants.defaultConstraintSize,
-                      bottom: DashboardConstants.defaultConstraintSize,
+                      // bottom: DashboardConstants.defaultConstraintSize,
                       start: 0,
                       end: 0,
                       child: viewContent()),
-                  PositionedDirectional(
+                  /*   PositionedDirectional(
                     child: footerView(),
                     bottom: 0,
                     start: 0,
                     end: 0,
-                  )
+                  ) */
                 ],
               ),
             ),
     );
-  }
-
-  List<DataRow> getDataRows() {
-    List<DataRow> dataRows = [];
-    for (int i = 0; i < feedBacksList.length; i++) {
-      UserFeedback userFeedback = feedBacksList[i];
-      DataRow dataRow = getFeedbackRow(userFeedback);
-      dataRows.add(dataRow);
-    }
-    return dataRows;
   }
 
   onSort(int columnIndex, bool ascending) {
@@ -156,46 +185,14 @@ class _HomeState extends State<Home> {
 
         break;
     }
-
+    feedbackData = FeedbackData(userFeedbacks: feedBacksList);
     setState(() {
       this.sortColumnIndex = columnIndex;
       this.isAscending = ascending;
     });
   }
 
-  restoreStartingDate() {
-    startingDate = previousStartingDate;
-  }
-
-  restoreEndingDate() {
-    endingDate = previousEndingDate;
-  }
-
-  backupStartingDate() {
-    previousStartingDate = startingDate;
-  }
-
-  backupEndingDate() {
-    previousEndingDate = endingDate;
-  }
-
-  clearFilters() {
-    setState(() {
-      startingDate = null;
-      endingDate = null;
-    });
-  }
-
   applyFilters() async {
-    if (startingDate == null && endingDate == null) {
-      return;
-    }
-    if (startingDate != null && endingDate != null) {
-      if (endingDate!.isBefore(startingDate!)) {
-        showAlert(context);
-        return;
-      }
-    }
     showLoading(context);
     pageNumber = 0;
     StaticInfo.totalPagesFetched = 0;
@@ -207,7 +204,7 @@ class _HomeState extends State<Home> {
   fetchFirstPage() async {
     try {
       await apiHelper.fetchFirstPage(onCompletion,
-          startDate: startingDate, endDate: endingDate);
+          dateTimeRange: dateTimeRange);
     } catch (e) {
       handleFailureCase(e.toString());
     }
@@ -227,6 +224,7 @@ class _HomeState extends State<Home> {
     StaticInfo.totalPagesFetched = StaticInfo.totalPagesFetched + 1;
     pageNumber = StaticInfo.totalPagesFetched;
     StaticInfo.feedBackCollections[pageNumber] = feedBacks;
+    feedbackData = FeedbackData(userFeedbacks: feedBacksList);
     scrollToTop();
     setState(() {});
   }
@@ -247,7 +245,7 @@ class _HomeState extends State<Home> {
     }
     try {
       await apiHelper.fetchNextFeedBacks(onCompletion, lastDocument!,
-          startDate: startingDate, endDate: endingDate);
+          dateTimeRange: dateTimeRange);
     } catch (e) {
       handleFailureCase(e.toString());
     }
@@ -260,9 +258,6 @@ class _HomeState extends State<Home> {
   }
 
   handleFailureCase(String message) {
-    restoreStartingDate();
-    restoreEndingDate();
-
     hideLoading();
     // restoreDates();
     showAlert(context, message: message);
@@ -270,31 +265,44 @@ class _HomeState extends State<Home> {
   }
 
   Widget viewContent() {
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      child: SingleChildScrollView(
-        controller: scrollController,
-        child: Column(
-          children: [
-            DataTable(
-                sortAscending: isAscending,
-                sortColumnIndex: sortColumnIndex,
-                columns: [
-                  headerTextDataColumn("Feedback\nDate", onSort),
-                  headerTextDataColumn("User\nId", onSort),
-                  headerTextDataColumn("User\nName", onSort),
-                  headerTextDataColumn("User\nMobile", onSort),
-                  headerTextDataColumn("Feedback\nRating", onSort),
-                  headerTextDataColumn("Feedback\nComment", onSort),
-                  headerTextDataColumn("Device\nOS", onSort),
-                  headerTextDataColumn("App\nVersion", onSort),
-                  headerTextDataColumn("Device\nModel", onSort),
-                  headerTextDataColumn("User\nemail", onSort),
-                ],
-                rows: getDataRows()),
-          ],
-        ),
+   
+    return SingleChildScrollView(
+      controller: scrollController,
+      child: Column(
+        children: [
+          PaginatedDataTable(
+            columns: [
+              headerTextDataColumn("Feedback\nDate", onSort),
+              headerTextDataColumn("User\nId", onSort),
+              headerTextDataColumn("User\nName", onSort),
+              headerTextDataColumn("User\nMobile", onSort),
+              headerTextDataColumn("Feedback\nRating", onSort),
+              headerTextDataColumn("Feedback\nComment", onSort),
+              headerTextDataColumn("Device\nOS", onSort),
+              headerTextDataColumn("App\nVersion", onSort),
+              headerTextDataColumn("Device\nModel", onSort),
+              headerTextDataColumn("User\nemail", onSort),
+            ],
+            source: feedbackData!,
+            sortAscending: isAscending,
+            sortColumnIndex: sortColumnIndex,
+            rowsPerPage: pageSize,
+            // showCheckboxColumn: true,
+            // columnSpacing: 45,
+            //ApiConstants.pageSize,
+            onRowsPerPageChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  pageSize = value;
+                });
+              }
+            },
+
+          ),
+          Container(
+            height: DashboardConstants.defaultConstraintSize * 3,
+          ),
+        ],
       ),
     );
   }
@@ -346,39 +354,32 @@ class _HomeState extends State<Home> {
       height: DashboardConstants.defaultConstraintSize,
       width: MediaQuery.of(context).size.width,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           DateSelectionCell(
-              buttonName: "Select Starting Date",
+            onTap: () async {
+              DateTimeRange? dateTimeRangeTemp =
+                  await selectDateRange(context, dateTimeRange);
+              if (dateTimeRangeTemp != null) {
+                dateTimeRange = dateTimeRangeTemp;
+                setState(() {});
+                applyFilters();
+              }
+            },
+            dateTimeRange: dateTimeRange,
+          ),
+          IconButton(
               onPressed: () async {
-                DateTime? dateTime = await selectDate(context, startingDate);
-                if (dateTime != null) {
-                  backupStartingDate();
-                  setState(() {
-                    startingDate = dateTime;
-                  });
-                }
+                await exportCsv(feedBacksList);
               },
-              dateText: startingDate == null
-                  ? null
-                  : getFormattedDateOnly(startingDate!)),
-          DateSelectionCell(
-              buttonName: "Select Ending Date",
-              onPressed: () async {
-                DateTime? dateTime = await selectDate(context, endingDate);
-                if (dateTime != null) {
-                  backupEndingDate();
-                  setState(() {
-                    endingDate = dateTime;
-                  });
-                }
-              },
-              dateText: endingDate == null
-                  ? null
-                  : getFormattedDateOnly(endingDate!)),
-          DashboardPrimaryButton(
-            buttonName: "Apply Filters",
-            onPressed: applyFilters,
+              icon: Icon(
+                Icons.download_outlined,
+
+                // color: Colors.blue,
+              )),
+          SizedBox(
+            width: 30,
           )
         ],
       ),

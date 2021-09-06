@@ -8,12 +8,7 @@ class ApiHelper {
           DocumentSnapshot documentSnapshot, List<UserFeedback> feedbacks),
       {DateTime? startDate,
       DateTime? endDate}) async {
-    // if (startDate == null) {
-    //   startDate = DateTime(2000);
-    // }
-    // if (endDate == null) {
-    //   endDate = DateTime.now();
-    // }
+
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(ApiConstants.userFeedback)
         .orderBy(ApiConstants.feedbackDate, descending: startDate == null)

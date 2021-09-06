@@ -9,6 +9,7 @@ import 'package:zameen_stage_2_dashboard/utils/api_helper.dart';
 import 'package:zameen_stage_2_dashboard/utils/constants.dart';
 import 'package:zameen_stage_2_dashboard/utils/csv_helper.dart';
 import 'package:zameen_stage_2_dashboard/utils/helper_functions.dart';
+import 'package:zameen_stage_2_dashboard/utils/static_info.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -23,6 +24,7 @@ class _HomeState extends State<Home> {
   int? sortColumnIndex;
   ApiHelper apiHelper = ApiHelper();
   DocumentSnapshot? lastDocument;
+
   int pageNumber = 0;
   DateTime? startingDate;
   DateTime? endingDate;
@@ -184,6 +186,24 @@ class _HomeState extends State<Home> {
     });
   }
 
+  applyFilters() async {
+    if (startingDate == null && endingDate == null) {
+      return;
+    }
+    if (startingDate != null && endingDate != null) {
+      if (endingDate!.isBefore(startingDate!)) {
+        showAlert(context);
+        return;
+      }
+    }
+    showLoading(context);
+    pageNumber = 0;
+    StaticInfo.totalPagesFetched = 0;
+    StaticInfo.feedBackCollections.clear();
+    await fetchFirstPage();
+    hideLoading();
+  }
+
   fetchFirstPage() async {
     try {
       await apiHelper.fetchFirstPage(onCompletion,
@@ -194,27 +214,49 @@ class _HomeState extends State<Home> {
   }
 
   void onCompletion(
-      DocumentSnapshot documentSnapshot, List<UserFeedback> feedbacks) {
+      DocumentSnapshot documentSnapshot, List<UserFeedback> feedBacks) {
     if (lastDocument == null) {
-      feedBacksList.clear();
+      StaticInfo.feedBackCollections.clear();
+    }
+    if (feedBacks.isEmpty) {
+      hasNextPage = false;
     }
     lastDocument = documentSnapshot;
-    feedBacksList.addAll(feedbacks);
-    pageNumber = pageNumber + 1;
-    if (scrollController.hasClients) {
-      scrollController.animateTo(0,
-          duration: Duration(milliseconds: 500), curve: Curves.easeIn);
-    }
+
+    feedBacksList = feedBacks;
+    StaticInfo.totalPagesFetched = StaticInfo.totalPagesFetched + 1;
+    pageNumber = StaticInfo.totalPagesFetched;
+    StaticInfo.feedBackCollections[pageNumber] = feedBacks;
+    scrollToTop();
     setState(() {});
   }
 
+  scrollToTop() {
+    if (scrollController.hasClients) {
+      scrollController.animateTo(0,
+          duration: Duration(milliseconds: 750), curve: Curves.ease);
+    }
+  }
+
   fetchNextPage() async {
+    if (pageNumber < StaticInfo.totalPagesFetched) {
+      pageNumber = pageNumber + 1;
+      feedBacksList = StaticInfo.feedBackCollections[pageNumber]!;
+      setState(() {});
+      return;
+    }
     try {
       await apiHelper.fetchNextFeedBacks(onCompletion, lastDocument!,
           startDate: startingDate, endDate: endingDate);
     } catch (e) {
       handleFailureCase(e.toString());
     }
+  }
+
+  fetchPreviousPage() async {
+    pageNumber = pageNumber - 1;
+    feedBacksList = StaticInfo.feedBackCollections[pageNumber]!;
+    setState(() {});
   }
 
   handleFailureCase(String message) {
@@ -266,7 +308,11 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
-            onPressed: pageNumber == 1 ? null : () {},
+            onPressed: pageNumber == 1
+                ? null
+                : () {
+                    fetchPreviousPage();
+                  },
             icon: Icon(
               Icons.arrow_back_ios,
             ),
@@ -275,7 +321,7 @@ class _HomeState extends State<Home> {
           SizedBox(
             width: 20,
           ),
-          Text("${pageNumber}"),
+          Text("$pageNumber"),
           SizedBox(
             width: 20,
           ),
@@ -337,21 +383,5 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
-  }
-
-  applyFilters() async {
-    if (startingDate == null && endingDate == null) {
-      return;
-    }
-    if (startingDate != null && endingDate != null) {
-      if (endingDate!.isBefore(startingDate!)) {
-        showAlert(context);
-        return;
-      }
-    }
-    showLoading(context);
-    pageNumber = 0;
-    await fetchFirstPage();
-    hideLoading();
   }
 }

@@ -8,19 +8,19 @@ class ApiHelper {
           DocumentSnapshot documentSnapshot, List<UserFeedback> feedbacks),
       {DateTime? startDate,
       DateTime? endDate}) async {
-    if (startDate == null) {
-      startDate = DateTime(2000);
-    }
-    if (endDate == null) {
-      endDate = DateTime.now();
-    }
+    // if (startDate == null) {
+    //   startDate = DateTime(2000);
+    // }
+    // if (endDate == null) {
+    //   endDate = DateTime.now();
+    // }
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(ApiConstants.userFeedback)
-        .orderBy(ApiConstants.feedbackDate, descending: true)
+        .orderBy(ApiConstants.feedbackDate, descending: startDate == null)
         .where(ApiConstants.feedbackDate,
-            isGreaterThan: Timestamp.fromDate(startDate))
+            isGreaterThan: Timestamp.fromDate(startDate ?? DateTime(2000)))
         .where(ApiConstants.feedbackDate,
-            isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+            isLessThanOrEqualTo: Timestamp.fromDate(endDate ?? DateTime.now()))
         .limit(ApiConstants.pageSize)
         .get();
     List<UserFeedback> feedBacks = [];
@@ -42,19 +42,13 @@ class ApiHelper {
       DocumentSnapshot lastDocument,
       {DateTime? startDate,
       DateTime? endDate}) async {
-    if (startDate == null) {
-      startDate = DateTime(2000);
-    }
-    if (endDate == null) {
-      endDate = DateTime.now();
-    }
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(ApiConstants.userFeedback)
-        .orderBy(ApiConstants.feedbackDate, descending: true)
+        .orderBy(ApiConstants.feedbackDate, descending: startDate == null)
         .where(ApiConstants.feedbackDate,
-            isGreaterThan: Timestamp.fromDate(startDate))
+            isGreaterThan: Timestamp.fromDate(startDate ?? DateTime(2000)))
         .where(ApiConstants.feedbackDate,
-            isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+            isLessThanOrEqualTo: Timestamp.fromDate(endDate ?? DateTime.now()))
         .startAfterDocument(lastDocument)
         .limit(ApiConstants.pageSize)
         .get();
